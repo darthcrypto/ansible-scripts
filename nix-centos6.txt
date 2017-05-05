@@ -1,0 +1,40 @@
+---
+- hosts: '{{ target }}'
+  remote_user: root
+
+  tasks:
+
+  - name: unarchive file
+    unarchive:
+      src: /etc/ansible/files/nix/splunk-add-on-for-unix-and-linux_523.tgz
+      dest: /opt/splunkforwarder/etc/apps
+
+  - name: make local app directory
+    file:
+      path: /opt/splunkforwarder/etc/apps/Splunk_TA_nix/local
+      state: directory
+
+  - name: change the permissions of the new directory
+    file:
+       path: /opt/splunkforwarder/etc/apps/Splunk_TA_nix
+       state: directory
+       owner: splunk
+       group: splunk
+       mode: 0755
+       recurse: yes
+
+  - name: copy inputs.conf to local app directory
+    copy:
+      src: /etc/ansible/files/nix/inputs.conf
+      dest: /opt/splunkforwarder/etc/apps/Splunk_TA_nix/local/inputs.conf
+      owner: splunk
+      group: splunk
+      mode: 0600
+
+  - name: restart splunk
+    command: /opt/splunkforwarder/bin/splunk restart
+
+  - name: delete the old tarball
+    file:
+      path: /opt/splunkforwarder/etc/apps/splunk-add-on-for-unix-and-linux_523.tgz
+      state: absent

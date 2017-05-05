@@ -1,0 +1,60 @@
+---
+- hosts: '{{ target }}'
+  remote_user: root
+
+  tasks:
+
+  - name: copy splunkforwarder public key
+    copy:
+      src: /etc/ansible/files/splunkforwarder/gpg-key-splunkforwarder
+      dest: /tmp/gpg-key-splunkforwarder
+      owner: root
+      group: root
+      mode: 644
+
+  - name: import splunkforwarder public key
+    command: rpm --import /tmp/gpg-key-splunkforwarder
+
+  - name: install splunkforwarder
+    yum:
+      name: splunkforwarder
+      state: present
+
+  - name: copy inputs.conf to local directory
+    copy:
+      src: /etc/ansible/files/splunkforwarder/inputs.conf
+      dest: /opt/splunkforwarder/etc/system/local/inputs.conf
+      owner: splunk
+      group: splunk
+      mode: 0600
+
+  - name: Set hostname in inputs.conf file
+    lineinfile:
+        dest: /opt/splunkforwarder/etc/system/local/inputs.conf
+        regexp: ^host =.*
+        insertafter: ^# host =
+        line: host = {{ ansible_nodename }}
+
+  - name: copy outputs.conf to local directory
+    copy: 
+      src: /etc/ansible/files/splunkforwarder/outputs.conf
+      dest: /opt/splunkforwarder/etc/system/local/outputs.conf
+      owner: splunk
+      group: splunk
+      mode: 0644
+
+  - name: enable boot start
+    command: /opt/splunkforwarder/bin/splunk enable boot-start --accept-license
+
+  - name: enable splunkd to run as splunk user
+    command: /opt/splunkforwarder/bin/splunk enable boot-start -user splunk
+
+  - name: make splunk the owner of /opt/splunkforwarder
+    command: chown -R splunk:splunk /opt/splunkforwarder
+
+  - name: enable splunk service
+    command: chkconfig splunk on
+
+  - name: start splunk service
+    command: service splunk start
+

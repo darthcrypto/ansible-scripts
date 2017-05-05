@@ -1,0 +1,41 @@
+---
+- hosts: '{{ target }}'
+  remote_user: root
+
+  tasks:
+
+  - name: copy cbresponse agent rpm to root directory
+    copy: 
+      src: /etc/ansible/files/cbresponse/CarbonBlackClientSetup-linux-v5.1.2.61109.rpm
+      dest: /root/
+      owner: root
+      group: root
+      mode: 0644 
+
+  - name: copy cbresponse agent install script to root directory
+    copy:
+      src: /etc/ansible/files/cbresponse/CarbonBlackClientSetup-linux-v5.1.2.61109.sh
+      dest: /root/
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: copy cbresponse agent readme file to root directory
+    copy:
+      src: /etc/ansible/files/cbresponse/readme.txt
+      dest: /root/
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: copy cbresponse agent ini file to root directory
+    copy:
+      src: /etc/ansible/files/cbresponse/sensorsettings.ini
+      dest: /root/
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: run cbresponse agent script
+    command: bash /root/CarbonBlackClientSetup-linux-v5.1.2.61109.sh
+
